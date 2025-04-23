@@ -71,20 +71,34 @@ const results = async (search) => {
       try {
         // Getting a proper selector for the search contents was a challenge, but this works.
         let titleElement = result.querySelector("a h2 span");
+        // Added extra selectors to handle different layouts, seems to have fixed most of the issues with search results.
+        if (!titleElement) {
+          titleElement = result.querySelector("div h2 span");
+        }
         let ratingElement = result.querySelector("div.a-row.a-size-small span");
+        if (!ratingElement) {
+          titleElement = result.querySelector("span.a-size-mini.a-color-base");
+        }
         let reviewsElement = result.querySelector(
           "div.a-row.a-size-small span.a-size-base.s-underline-text"
         );
+        if (!reviewsElement) {
+          reviewsElement = result.querySelector("span.a-size-mini.a-color-secondary");
+        }
         let imageElement = result.querySelector(
           "div.a-section.aok-relative.s-image-fixed-height img"
         );
+        if (!imageElement) {
+          imageElement = result.querySelector("img.s-image");
+        }
         let urlElement = result.querySelector(
-          "div.a-section.aok-relative.s-image-fixed-height a"
+          "div div a"
         );
-        let linkElement = result.querySelector('div div a');
-
+        if (!urlElement) {
+          urlElement = result.querySelector("a.a-link-normal.s-faceout-link");
+        }
         // Checks if the required data is available, throws an error if not and skips the item.
-        if (titleElement && ratingElement && reviewsElement && imageElement) {
+        if (titleElement && ratingElement && reviewsElement && imageElement && urlElement) {
           // Extracts the title, rating, reviews, image and url.
           let title = titleElement.textContent.trim();
           // Extracts the rating and slices it to get only the first 3 digits.
@@ -93,7 +107,8 @@ const results = async (search) => {
           let image = imageElement.getAttribute("src");
           // Replaces the original image with a higher quality one.
           image = image.replace("AC_UY218", "SL1500");
-          let url = `https://www.amazon.com${linkElement.getAttribute('href')}`;
+          image = image.replace("AC_UL320", "SL1500");
+          let url = `https://www.amazon.com${urlElement.getAttribute('href')}`;
           // Pushes the extracted data to the results array.
           resultsArray.push({ title, rating, reviews, image, url });
         }
